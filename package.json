@@ -1,0 +1,20 @@
+{
+  "name": "connect-clojure-api",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/spirinvladimir/connect-clojure-api.git"
+  },
+  "scripts": {
+    "test": "node -e \"console.log(require('./index').connect(1,2))\"",
+    "start": "npm run watch",
+    "build": "lein cljsbuild once",
+    "watch": "lein cljsbuild auto"
+  },
+  "devDependencies": {
+    "ava": "0.18.2",
+    "connect-js-adapter-tls": "spotware/connect-js-adapter-tls#v2.0.0",
+    "connect-js-encode-decode": "spotware/connect-js-encode-decode",
+    "connect-protobuf-messages": "spotware/connect-protobuf-messages"
+  }
+}
