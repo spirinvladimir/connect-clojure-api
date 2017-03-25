@@ -1,29 +1,23 @@
 (ns connect-clojure-api.connect)
 
 (defn connect [adapter codec]
-  (let [encode (.encode codec)
-        decode (.decode codec)
-        connected false
+  (let [connected false
         disconnected true
-        id (atom 0)
+        id (atom "0")
         state (atom disconnected)
         callbacks (atom {})
         send (fn [payloadType payload callback]
-               (if (= @state connected)
-                 (let [clientMsgId (swap! id inc)
-                       message (encode clientMsgId payloadType payload)]
+               (if (= @state disconnected)
+                 (callback disconnected)
+                 (let [clientMsgId (swap! id (fn [s] (str (inc (int s)))))
+                       message (.encode codec payloadType payload clientMsgId)]
                    (swap! callbacks assoc clientMsgId callback)
-                   (.send adapter message))
-                 (callback disconnected)))
+                   (.send adapter message))))
         recive (fn [payloadType payload clientMsgId]
                  (let [callback (get @callbacks clientMsgId)]
-                   (if nil? callback
-                     nil
+                   (when-not (nil? callback)
                      (callback payload))))]
-
-
-    (.onOpen adapter (reset! state connected))
-    (.onEnd adapter (reset! state disconnected))
-
+    (.onOpen adapter #(reset! state connected))
+    (.onEnd adapter #(reset! state disconnected))
     (.decode codec recive)
     send))

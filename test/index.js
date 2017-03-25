@@ -1,14 +1,12 @@
 var
-    connect = require('../index'),
+    connect = require('../index').connect,
     ProtoMessages = require('connect-protobuf-messages'),
     EncodeDecode = require('connect-js-encode-decode'),
-    AdapterTLS = require('connect-js-adapter-tls');
+    AdapterTLS = require('connect-js-adapter-tls'),
     protocol = new ProtoMessages([
         {
-            file: 'node_modules/connect-protobuf-messages/src/main/protobuf/CommonMessages.proto'
-        },
-        {
-            file: 'node_modules/connect-protobuf-messages/src/main/protobuf/OpenApiMessages.proto'
+            file: 'node_modules/connect-protobuf-messages/src/main/protobuf/CommonMessages.proto',
+            protoPayloadType: 'ProtoPayloadType'
         }
     ]),
     adapter = new AdapterTLS({
@@ -16,14 +14,18 @@ var
         port: 5032
     }),
     encodeDecode = new EncodeDecode(),
+    codec = require('connect-js-codec'),
     sendCommand;
-    coder = require('./coder')(encodeDecode, adapter)
-    this.encodeDecode.registerDecodeHandler(
-        this.onMessage.bind(this)
-    );
+
+protocol.load();
+protocol.build();
+
+sendCommand = connect(
+  adapter,
+  codec(adapter, encodeDecode, protocol)
+);
 
 adapter.onOpen(function () {
-    sendCommand = connect(adapter, coder);
-    sendCommand(1086, {})
+    sendCommand(52, {timestamp: Date.now()}, (p) => {console.dir(p)});
 });
 adapter.connect();
